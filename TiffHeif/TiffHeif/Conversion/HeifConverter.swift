@@ -4,6 +4,7 @@ import ImageIO
 import UniformTypeIdentifiers
 import CoreGraphics
 
+// TODO: interface, bindeable ... progress done internally
 class HeifConverter
 {
     enum ConversionError: Error
