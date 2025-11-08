@@ -1,6 +1,6 @@
 import AppKit
 
-public class Dialogs
+public class System
 {
     public static func selectOutputDirectory() -> String
     {

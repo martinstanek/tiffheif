@@ -26,6 +26,7 @@ struct ContentView: View
                     .append(url)
             }
             .frame(height: 200)
+            .padding(.horizontal)
             targetFolderSetion
             settingsSection
             statusSection
@@ -62,7 +63,7 @@ struct ContentView: View
                 Spacer()
                 Button("...")
                 {
-                    outputPath = Dialogs.selectOutputDirectory()
+                    outputPath = System.selectOutputDirectory()
                 }
                 .buttonStyle(.borderless)
             }
