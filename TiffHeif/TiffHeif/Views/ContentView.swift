@@ -2,7 +2,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct ContentView: View
-{    
+{
     @AppStorage("isLossless") private var isLossless = true
     @AppStorage("quality") private var quality: Double = 0.8
     @State private var outputPath = ""
@@ -105,14 +105,13 @@ struct ContentView: View
         }
     }
     
-    
     private func convertFiles() async
     {
         isConverting = true
         conversionProgress = 0.0
         
         let total = droppedFiles.count
-        let options = HeifConverter.ConversionOptions(
+        let options = ConversionOptions(
             quality: quality,
             lossless: isLossless,
             outputDirectory: outputPath)
