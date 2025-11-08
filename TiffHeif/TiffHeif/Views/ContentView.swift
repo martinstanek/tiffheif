@@ -5,10 +5,9 @@ import UniformTypeIdentifiers
 struct ContentView: View
 {
     @State private var droppedFiles: [URL] = []
-    @State private var conversionStatus = ""
     @State private var outputPath = ""
     @State private var conversionProgress: Double = 0.0
-    @State private var heifQuality: Double = 0.8
+    @State private var quality: Double = 0.8
     @State private var isDropTargeted = false
     @State private var isLossless = true
     @State private var isConverting = false
@@ -29,7 +28,7 @@ struct ContentView: View
             .padding(.horizontal)
             targetFolderSetion
             settingsSection
-            statusSection
+            actionSection
                 .frame(height: 60)
         }
         .padding()
@@ -78,10 +77,10 @@ struct ContentView: View
             Toggle("Lossless compression (10b)", isOn: $isLossless)
             VStack(alignment: .leading, spacing: 8)
             {
-                Text("Quality: \(Int(heifQuality * 100))%")
+                Text("Quality: \(Int(quality * 100))%")
                     .foregroundColor(.secondary)
                     .opacity(isLossless ? 0 : 1)
-                Slider(value: $heifQuality, in: 0.0...1.0)
+                Slider(value: $quality, in: 0.0...1.0)
                     .disabled(isLossless)
                     .opacity(isLossless ? 0 : 1)
             }
@@ -89,7 +88,7 @@ struct ContentView: View
         .padding(.horizontal)
     }
     
-    private var statusSection: some View
+    private var actionSection: some View
     {
         VStack(spacing: 8)
         {
@@ -99,7 +98,7 @@ struct ContentView: View
             }
             label:
             {
-                Text("convert")
+                Text("Convert")
             }
             .controlSize(.large)
             .buttonStyle(.borderedProminent)
@@ -111,48 +110,38 @@ struct ContentView: View
     {
         await MainActor.run {
             isConverting = true
-            conversionStatus = "Starting conversion..."
             conversionProgress = 0.0
         }
         
         let total = droppedFiles.count
         
-        do {
-            for (index, sourceURL) in droppedFiles.enumerated() {
-                do {
-                    try await converter.convert(
-                        file: sourceURL,
-                        options: HeifConverter.ConversionOptions(
-                            quality: heifQuality,
-                            lossless: isLossless,
-                            outputDirectory: outputPath))
-                    
-                    await MainActor.run {
-                        conversionProgress = Double(index + 1) / Double(total)
-                        conversionStatus = "Converting file \(index + 1) of \(total)"
-                    }
-                } catch {
-                    await MainActor.run {
-                        conversionStatus = "Error converting \(sourceURL.lastPathComponent): \(error.localizedDescription)"
-                    }
-                    // Continue with next file instead of stopping completely
-                    continue
+        for (index, sourceURL) in droppedFiles.enumerated() {
+            do {
+                try await converter.convert(
+                    file: sourceURL,
+                    options: HeifConverter.ConversionOptions(
+                        quality: quality,
+                        lossless: isLossless,
+                        outputDirectory: outputPath))
+                
+                await MainActor.run
+                {
+                    conversionProgress = Double(index + 1) / Double(total)
                 }
-            }
-            
-            await MainActor.run {
-                if conversionProgress >= 1.0 {
-                    conversionStatus = "Conversion completed successfully!"
-                    droppedFiles.removeAll()
-                }
-                isConverting = false
-            }
-        } catch {
-            await MainActor.run {
-                conversionStatus = "Conversion failed: \(error.localizedDescription)"
-                isConverting = false
+            } catch {
+                
+                continue
             }
         }
+        
+        await MainActor.run {
+            if conversionProgress >= 1.0 {
+                
+                droppedFiles.removeAll()
+            }
+            isConverting = false
+        }
+        
     }
 }
 
