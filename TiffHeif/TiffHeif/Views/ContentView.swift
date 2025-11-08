@@ -4,32 +4,16 @@ import UniformTypeIdentifiers
 @MainActor
 struct ContentView: View
 {
-    @State private var isDropTargeted = false
     @State private var droppedFiles: [URL] = []
     @State private var conversionStatus = ""
     @State private var outputPath = ""
     @State private var conversionProgress: Double = 0.0
     @State private var heifQuality: Double = 0.8
+    @State private var isDropTargeted = false
     @State private var lossless = false
     @State private var isConverting = false
     
     private let converter = HeifConverter()
-    
-    private func selectOutputDirectory()
-    {
-        let panel = NSOpenPanel()
-        panel.title = "Choose Output Directory"
-        panel.showsHiddenFiles = false
-        panel.canChooseFiles = false
-        panel.canChooseDirectories = true
-        panel.allowsMultipleSelection = false
-        panel.canCreateDirectories = true
-        
-        if panel.runModal() == .OK
-        {
-            outputPath = panel.url?.path ?? NSHomeDirectory()
-        }
-    }
     
     var body: some View
     {
@@ -48,17 +32,18 @@ struct ContentView: View
     
     private var dropZone: some View
     {
-        ZStack {
+        ZStack
+        {
             RoundedRectangle(cornerRadius: 12)
                 .fill(isDropTargeted ? Color.blue.opacity(0.3) : Color.gray.opacity(0.2))
                 .frame(minHeight: 200)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
                         .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [10]))
-                        .foregroundColor(isDropTargeted ? .blue : .gray)
-                )
+                        .foregroundColor(isDropTargeted ? .blue : .gray))
             
-            VStack(spacing: 12) {
+            VStack(spacing: 12)
+            {
                 Image(systemName: "doc.viewfinder")
                     .font(.system(size: 40))
                 Text("Drop TIFF files here")
@@ -108,7 +93,8 @@ struct ContentView: View
     {
         VStack(alignment: .leading, spacing: 16)
         {
-            GroupBox("Output Settings") {
+            GroupBox("Output Settings")
+            {
                 VStack(alignment: .leading, spacing: 12)
                 {
                     HStack
@@ -120,7 +106,7 @@ struct ContentView: View
                         Spacer()
                         Button("Change")
                         {
-                            selectOutputDirectory()
+                            outputPath = Dialogs.selectOutputDirectory()
                         }
                         .buttonStyle(.borderless)
                     }
