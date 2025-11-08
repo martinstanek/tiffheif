@@ -17,4 +17,12 @@ public class System
             ? panel.url?.path ?? NSHomeDirectory()
             : ""
     }
+    
+    public static func showAlert(error: Error)
+    {
+        let alert = NSAlert()
+        alert.messageText = error.localizedDescription
+        alert.alertStyle = .critical
+        alert.runModal()
+    }
 }

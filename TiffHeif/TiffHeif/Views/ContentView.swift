@@ -1,15 +1,14 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-@MainActor
 struct ContentView: View
 {
+    @AppStorage("outputPath") private var outputPath = ""
+    @AppStorage("quality") private var quality: Double = 0.8
+    @AppStorage("isLossless") private var isLossless = true
     @State private var droppedFiles: [URL] = []
-    @State private var outputPath = ""
     @State private var conversionProgress: Double = 0.0
-    @State private var quality: Double = 0.8
     @State private var isDropTargeted = false
-    @State private var isLossless = true
     @State private var isConverting = false
     
     private let converter = HeifConverter()
@@ -106,42 +105,39 @@ struct ContentView: View
         }
     }
     
+    
     private func convertFiles() async
     {
-        await MainActor.run {
-            isConverting = true
-            conversionProgress = 0.0
-        }
+        isConverting = true
+        conversionProgress = 0.0
         
         let total = droppedFiles.count
+        let options = HeifConverter.ConversionOptions(
+            quality: quality,
+            lossless: isLossless,
+            outputDirectory: outputPath)
         
-        for (index, sourceURL) in droppedFiles.enumerated() {
-            do {
-                try await converter.convert(
-                    file: sourceURL,
-                    options: HeifConverter.ConversionOptions(
-                        quality: quality,
-                        lossless: isLossless,
-                        outputDirectory: outputPath))
-                
-                await MainActor.run
-                {
-                    conversionProgress = Double(index + 1) / Double(total)
-                }
-            } catch {
-                
+        for (index, sourceURL) in droppedFiles.enumerated()
+        {
+            do
+            {
+                try await converter.convert(file: sourceURL,options: options)
+
+                conversionProgress = Double(index + 1) / Double(total)
+            }
+            catch let error
+            {
+                System.showAlert(error: error)
                 continue
             }
         }
         
-        await MainActor.run {
-            if conversionProgress >= 1.0 {
-                
-                droppedFiles.removeAll()
-            }
-            isConverting = false
+        if conversionProgress >= 1.0
+        {
+            droppedFiles.removeAll()
         }
         
+        isConverting = false
     }
 }
 
