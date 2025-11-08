@@ -10,7 +10,7 @@ struct ContentView: View
     @State private var conversionProgress: Double = 0.0
     @State private var heifQuality: Double = 0.8
     @State private var isDropTargeted = false
-    @State private var lossless = false
+    @State private var isLossless = false
     @State private var isConverting = false
     
     private let converter = HeifConverter()
@@ -24,8 +24,9 @@ struct ContentView: View
                 url in droppedFiles.append(url)
             }
             .frame(height: 200)
-            progressSection.frame(height: 50)
+            targetFolderSetion
             settingsSection
+            progressSection.frame(height: 50)
             statusSection.frame(height: 60)
         }
         .padding()
@@ -38,11 +39,30 @@ struct ContentView: View
     {
         VStack(alignment: .leading, spacing: 8)
         {
-            Text(conversionProgress > 0 ? "Converting..." : "Waiting for files...")
-                .font(.caption)
-                .foregroundColor(.secondary)
             ProgressView(value: conversionProgress > 0 ? conversionProgress : 0)
                 .progressViewStyle(.linear)
+        }
+        .padding(.horizontal)
+    }
+    
+    private var targetFolderSetion: some View
+    {
+        VStack(alignment: .leading, spacing: 8)
+        {
+            HStack
+            {
+                Text("Output folder:")
+                    .foregroundColor(.secondary)
+                Text(outputPath)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                Spacer()
+                Button("Change")
+                {
+                    outputPath = Dialogs.selectOutputDirectory()
+                }
+                .buttonStyle(.borderless)
+            }
         }
         .padding(.horizontal)
     }
@@ -51,35 +71,14 @@ struct ContentView: View
     {
         VStack(alignment: .leading, spacing: 16)
         {
-            GroupBox("Output Settings")
+            Toggle("Lossless compression", isOn: $isLossless)
+            
+            VStack(alignment: .leading, spacing: 8)
             {
-                VStack(alignment: .leading, spacing: 12)
-                {
-                    HStack
-                    {
-                        Text("Output folder:").foregroundColor(.secondary)
-                        Text(outputPath)
-                            .lineLimit(1)
-                            .truncationMode(.tail)
-                        Spacer()
-                        Button("Change")
-                        {
-                            outputPath = Dialogs.selectOutputDirectory()
-                        }
-                        .buttonStyle(.borderless)
-                    }
-                    
-                    Divider()
-                    
-                    VStack(alignment: .leading, spacing: 8)
-                    {
-                        Text("HEIF Quality: \(Int(heifQuality * 100))%").foregroundColor(.secondary)
-                        Slider(value: $heifQuality, in: 0.0...1.0).disabled(lossless)
-                    }
-                    
-                    Toggle("Lossless compression", isOn: $lossless)
-                }
-                .padding(.vertical, 8)
+                Text("Quality: \(Int(heifQuality * 100))%")
+                    .foregroundColor(.secondary)
+                Slider(value: $heifQuality, in: 0.0...1.0)
+                    .disabled(isLossless)
             }
         }
         .padding(.horizontal)
@@ -121,7 +120,7 @@ struct ContentView: View
                         file: sourceURL,
                         options: HeifConverter.ConversionOptions(
                             quality: heifQuality,
-                            lossless: lossless,
+                            lossless: isLossless,
                             outputDirectory: outputPath))
                     
                     await MainActor.run {

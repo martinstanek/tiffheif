@@ -3,10 +3,10 @@ import UniformTypeIdentifiers
 
 struct DropZone: View
 {
-    @State private var droppedFiles: [URL] = []
+    @State private var message = "no files dropped"
     @State private var isDropTargeted = false
-    
-    var onFileDropped: (URL) -> Void
+    @State private var fileCount: Int = 0
+    private var onFileDropped: (URL) -> Void
     
     init(onFileDropped: @escaping (URL) -> Void)
     {
@@ -31,6 +31,9 @@ struct DropZone: View
                     .font(.system(size: 40))
                 Text("Drop your TIFF files here")
                     .font(.headline)
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
             }
         }
         .onDrop(of: [.fileURL], isTargeted: $isDropTargeted)
@@ -44,15 +47,27 @@ struct DropZone: View
                        let path = String(data: data, encoding: .utf8),
                        let url = URL(string: path)
                     {
-                        if let fileType = try? url.resourceValues(forKeys: [.typeIdentifierKey]).typeIdentifier, (UTType(fileType)?.conforms(to: .tiff) ?? false)
+                        if (isTiffFile(url: url))
                         {
-                            droppedFiles.append(url)
                             onFileDropped(url)
+                            fileCount = fileCount + 1
+                            message = "\(fileCount) files dropped"
+                        }
+                        else
+                        {
+                            message = "only TIFF files supported"
                         }
                     }
                 }
             }
             return true
         }
+    }
+    
+    private func isTiffFile(url: URL) -> Bool
+    {
+        let fileType = try? url.resourceValues(forKeys: [.typeIdentifierKey]).typeIdentifier
+        
+        return (UTType(fileType!)?.conforms(to: .tiff) ?? false)
     }
 }
