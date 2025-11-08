@@ -75,12 +75,17 @@ class HeifConverter
     
     private func convertImage(source: URL, destination: URL, conversionOptions: ConversionOptions) async throws
     {
-        return try await Task.detached(priority: .userInitiated) {
-            guard let image = CIImage(contentsOf: source) else {
+        return try await Task.detached(priority: .userInitiated)
+        {
+            guard let image = CIImage(contentsOf: source)
+            else
+            {
                 throw ConversionError.invalidSourceFile
             }
             
-            guard let colorSpace = image.colorSpace else {
+            guard let colorSpace = image.colorSpace
+            else
+            {
                 throw ConversionError.conversionFailed
             }
             
@@ -89,13 +94,16 @@ class HeifConverter
             let options = [kCGImageDestinationLossyCompressionQuality: quality] as [CFString: Any]
             
             do {
-                if conversionOptions.lossless {
+                if conversionOptions.lossless
+                {
                     try context.writeHEIF10Representation(
                         of: image,
                         to: destination,
                         colorSpace: colorSpace,
                         options: options as [CIImageRepresentationOption : Any])
-                } else {
+                }
+                else
+                {
                     try context.writeHEIFRepresentation(
                         of: image,
                         to: destination,
@@ -103,7 +111,9 @@ class HeifConverter
                         colorSpace: colorSpace,
                         options: options as [CIImageRepresentationOption : Any])
                 }
-            } catch {
+            }
+            catch
+            {
                 throw ConversionError.conversionFailed
             }
         }.value

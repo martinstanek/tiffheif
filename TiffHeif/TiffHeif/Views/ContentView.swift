@@ -2,10 +2,10 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct ContentView: View
-{
-    @AppStorage("outputPath") private var outputPath = ""
-    @AppStorage("quality") private var quality: Double = 0.8
+{    
     @AppStorage("isLossless") private var isLossless = true
+    @AppStorage("quality") private var quality: Double = 0.8
+    @State private var outputPath = ""
     @State private var droppedFiles: [URL] = []
     @State private var conversionProgress: Double = 0.0
     @State private var isDropTargeted = false
