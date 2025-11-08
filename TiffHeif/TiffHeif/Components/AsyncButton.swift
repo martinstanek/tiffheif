@@ -9,12 +9,7 @@ struct AsyncButton<Label: View, Trigger: Equatable>: View
     @State private var task: Task<Void, Never>?
     @State private var isRunning = false
     
-    init
-    (
-        cancellation: Trigger = false,
-        action: @escaping () async -> Void,
-        @ViewBuilder label: () -> Label
-    )
+    init(cancellation: Trigger = false, action: @escaping () async -> Void, @ViewBuilder label: () -> Label)
     {
         self.cancellation = cancellation
         self.action = action

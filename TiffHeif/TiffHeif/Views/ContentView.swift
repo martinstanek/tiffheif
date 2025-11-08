@@ -19,7 +19,11 @@ struct ContentView: View
     {
         VStack(spacing: 20)
         {
-            dropZone.frame(height: 200)
+            DropZone
+            {
+                url in droppedFiles.append(url)
+            }
+            .frame(height: 200)
             progressSection.frame(height: 50)
             settingsSection
             statusSection.frame(height: 60)
@@ -28,52 +32,6 @@ struct ContentView: View
         .frame(width: 500)
         .frame(minHeight: 550)
         .backgroundStyle(.background)
-    }
-    
-    private var dropZone: some View
-    {
-        ZStack
-        {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(isDropTargeted ? Color.blue.opacity(0.3) : Color.gray.opacity(0.2))
-                .frame(minHeight: 200)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [10]))
-                        .foregroundColor(isDropTargeted ? .blue : .gray))
-            
-            VStack(spacing: 12)
-            {
-                Image(systemName: "doc.viewfinder")
-                    .font(.system(size: 40))
-                Text("Drop TIFF files here")
-                    .font(.headline)
-                Text(".tiff or .tif files will be converted to HEIF")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .onDrop(of: [.fileURL], isTargeted: $isDropTargeted) { providers in
-            Task {
-                for provider in providers {
-                    if let item = try? await provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier),
-                       let data = item as? Data,
-                       let path = String(data: data, encoding: .utf8),
-                       let url = URL(string: path) {
-                        
-                        // Check if the file is a TIFF
-                        if let fileType = try? url.resourceValues(forKeys: [.typeIdentifierKey]).typeIdentifier,
-                           (UTType(fileType)?.conforms(to: .tiff) ?? false) {
-                            droppedFiles.append(url)
-                            conversionStatus = "Ready to convert \(droppedFiles.count) file\(droppedFiles.count == 1 ? "" : "s")"
-                        } else {
-                            conversionStatus = "Only TIFF files are supported"
-                        }
-                    }
-                }
-            }
-            return true
-        }
     }
     
     private var progressSection: some View
