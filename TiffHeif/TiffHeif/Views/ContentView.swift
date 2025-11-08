@@ -10,7 +10,7 @@ struct ContentView: View
     @State private var conversionProgress: Double = 0.0
     @State private var heifQuality: Double = 0.8
     @State private var isDropTargeted = false
-    @State private var isLossless = false
+    @State private var isLossless = true
     @State private var isConverting = false
     
     private let converter = HeifConverter()
@@ -19,28 +19,31 @@ struct ContentView: View
     {
         VStack(spacing: 20)
         {
+            progressSection
             DropZone
             {
-                url in droppedFiles.append(url)
+                url in droppedFiles
+                    .append(url)
             }
             .frame(height: 200)
             targetFolderSetion
             settingsSection
-            progressSection.frame(height: 50)
-            statusSection.frame(height: 60)
+            statusSection
+                .frame(height: 60)
         }
         .padding()
         .frame(width: 500)
-        .frame(minHeight: 550)
+        .frame(minHeight: 470)
         .backgroundStyle(.background)
     }
     
     private var progressSection: some View
     {
-        VStack(alignment: .leading, spacing: 8)
+        VStack()
         {
             ProgressView(value: conversionProgress > 0 ? conversionProgress : 0)
                 .progressViewStyle(.linear)
+                .opacity(conversionProgress > 0 ? 1 : 0)
         }
         .padding(.horizontal)
     }
@@ -57,7 +60,7 @@ struct ContentView: View
                     .lineLimit(1)
                     .truncationMode(.tail)
                 Spacer()
-                Button("Change")
+                Button("...")
                 {
                     outputPath = Dialogs.selectOutputDirectory()
                 }
@@ -71,14 +74,15 @@ struct ContentView: View
     {
         VStack(alignment: .leading, spacing: 16)
         {
-            Toggle("Lossless compression", isOn: $isLossless)
-            
+            Toggle("Lossless compression (10b)", isOn: $isLossless)
             VStack(alignment: .leading, spacing: 8)
             {
                 Text("Quality: \(Int(heifQuality * 100))%")
                     .foregroundColor(.secondary)
+                    .opacity(isLossless ? 0 : 1)
                 Slider(value: $heifQuality, in: 0.0...1.0)
                     .disabled(isLossless)
+                    .opacity(isLossless ? 0 : 1)
             }
         }
         .padding(.horizontal)
@@ -88,7 +92,6 @@ struct ContentView: View
     {
         VStack(spacing: 8)
         {
-            Text(droppedFiles.isEmpty ? "No files selected" : conversionStatus).foregroundColor(.secondary)
             AsyncButton(cancellation: isConverting)
             {
                 await convertFiles()

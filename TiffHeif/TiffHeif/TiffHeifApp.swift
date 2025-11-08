@@ -8,6 +8,8 @@ struct TiffHeifApp: App
         WindowGroup
         {
             ContentView()
+                .frame(width: 500, height: 500)
         }
+        .windowResizability(.contentSize)
     }
 }
