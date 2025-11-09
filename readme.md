@@ -4,7 +4,6 @@
 
 ![ui](https://github.com/martinstanek/tiffheif/blob/develop/logo.png?raw=true)
 
-When the user selects no compression, the most detailed 10b HEIF file is produced.
-In case of compression, a HEIC file is produced accordingly.
+Upon selecting lossless compression, the most detailed 10-bit HEIF file is generated, or a HEIC file is produced.
 
 ![ui](https://github.com/martinstanek/tiffheif/blob/develop/ui.png?raw=true)
